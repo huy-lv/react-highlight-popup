@@ -1,5 +1,5 @@
 {
-  "name": "@MidoAhmed/rollup-react-library-starter",
+  "name": "react-highlight-popup",
   "version": "0.1.0",
   "description": "Template and quick-starter to create modern React libraries using Rollup.",
   "main": "dist/cjs/bundle.js",
@@ -8,13 +8,10 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/MidoAhmed"
-  },
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "dev": "rollup -c -w",
-    "test": "jest",
+    "test": "jest --watchAll",
     "lint": "eslint src",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -23,9 +20,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MidoAhmed/rollup-react-library-starter.git"
+    "url": "git+https://github.com/huy-lv/react-highlight-popup.git"
   },
-  "author": "MidoAhmed",
+  "author": "huy-lv",
   "license": "MIT",
   "keywords": [
     "react-template",
@@ -35,9 +32,9 @@
     "template"
   ],
   "bugs": {
-    "url": "https://github.com/MidoAhmed/rollup-react-library-starter/issues"
+    "url": "https://github.com/huy-lv/react-highlight-popup/issues"
   },
-  "homepage": "https://MidoAhmed.github.io/rollup-react-library-starter",
+  "homepage": "https://huy-lv.github.io/react-highlight-popup",
   "peerDependencies": {
     "antd": "^5.4.0",
     "react": ">=16.8.0",
@@ -65,7 +62,9 @@
     "@types/react": "^18.0.33",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
+    "antd": "^5.4.0",
     "babel-jest": "^29.5.0",
+    "css-loader": "^6.8.1",
     "eslint": "^8.38.0",
     "eslint-plugin-react": "^7.32.2",
     "gh-pages": "^5.0.0",
@@ -80,9 +79,14 @@
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
-    "sass": "^1.61.0",
+    "sass": "^1.69.0",
+    "sass-loader": "^13.3.2",
     "storybook": "^7.0.2",
+    "style-loader": "^3.3.3",
     "tslib": "^2.5.0",
     "typescript": "^5.0.4"
+  },
+  "resolutions": {
+    "jackspeak": "2.1.1"
   }
 }
