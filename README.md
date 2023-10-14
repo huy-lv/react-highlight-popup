@@ -10,7 +10,7 @@ A light library to highlight the text on screen.
 
 ## Demo
 
-https://github.com/huy-lv/react-highlight-popup/assets/7688070/cb85b3e0-8055-41af-b9d6-86d40253a7b5
+![demo](./demo/demo.gif)
 
 ## Install
 
