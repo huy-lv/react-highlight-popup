@@ -3,10 +3,14 @@
 A light library to highlight the text on screen.
 
 ✅ Fully typescript
+
 ✅ Lightweight
+
 ✅ Unit test
 
 ## Demo
+
+<video src='/demo/demo.mov' width=180/>
 
 ## Install
 
@@ -28,6 +32,15 @@ import { HighlightText } from 'react-highlight-popup';
 <HighlightText>
     Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
 </HighlightText>
+
+//with custom typography
+import { Typography } from "@mui/material";
+
+<Typography>
+    <HighlightText>
+        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+    </HighlightText>
+</Typography>
 ```
 
 ### Props
