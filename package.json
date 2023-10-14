@@ -1,6 +1,6 @@
 {
   "name": "react-highlight-popup",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Template and quick-starter to create modern React libraries using Rollup.",
   "main": "dist/cjs/bundle.js",
   "module": "dist/esm/bundle.js",
@@ -16,7 +16,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "predeploy-storybook": "npm run build-storybook",
-    "deploy-storybook": "gh-pages -d storybook-static"
+    "deploy-storybook": "gh-pages -d storybook-static",
+    "publish-npm": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -36,7 +37,6 @@
   },
   "homepage": "https://huy-lv.github.io/react-highlight-popup",
   "peerDependencies": {
-    "antd": "^5.4.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
@@ -62,7 +62,6 @@
     "@types/react": "^18.0.33",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
-    "antd": "^5.4.0",
     "babel-jest": "^29.5.0",
     "css-loader": "^6.8.1",
     "eslint": "^8.38.0",

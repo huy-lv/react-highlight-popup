@@ -1,4 +1,4 @@
-import { addToSelectedText } from "../HighlightText";
+import { addToSelectedText } from "../utils";
 
 // test("addToSelectedText", () => {
 //   const input = [
