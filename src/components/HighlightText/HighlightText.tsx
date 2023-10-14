@@ -95,10 +95,6 @@ const HighlightText = ({
     }
     const selectionRange = selection.getRangeAt(0);
     selectionRangeRef.current = getSelectionOffset(selection, selectionRange);
-    // console.log(
-    //   "🚀 ~ file: HighlightText.tsx:103 ~ onMouseUp ~ selectionRangeRef.current:",
-    //   selectionRangeRef.current
-    // );
 
     const startNode = selectionRange.startContainer.parentNode;
     const endNode = selectionRange.endContainer.parentNode;
