@@ -85,6 +85,7 @@ const HighlightText = ({
     return { start, end };
   }
   function onMouseUp(e: MouseEvent) {
+    savedBounding.current = { x: 0, y: 0, width: 0 };
     const selection = window.getSelection();
     if (!selection) return;
     const selectedText = selection.toString().trim();
@@ -156,10 +157,9 @@ const HighlightText = ({
 
     const output = addToSelectedText(selectedText, newItem);
     setSelectedText(output.filter((o) => o.color !== undefined));
-    // console.log(
-    //   "🚀 ~ file: HighlightText.tsx:175 ~ onClickColor ~ output:",
-    //   output
-    // );
+    setShowPopover(false);
+    selectionRangeRef.current = undefined;
+    window.getSelection()?.removeAllRanges();
   };
 
   const renderColor = (color?: string, index?: number) => {
@@ -235,7 +235,9 @@ const HighlightText = ({
           children
         ) : (
           <>
-            <span>{children.slice(0, selectedText[0].offset.start)}</span>
+            {selectedText[0].offset.start !== 0 && (
+              <span>{children.slice(0, selectedText[0].offset.start)}</span>
+            )}
             {selectedText.map(renderText)}
           </>
         )}
