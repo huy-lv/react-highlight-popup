@@ -1,6 +1,6 @@
 {
   "name": "react-highlight-popup",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Template and quick-starter to create modern React libraries using Rollup.",
   "main": "dist/cjs/bundle.js",
   "module": "dist/esm/bundle.js",
