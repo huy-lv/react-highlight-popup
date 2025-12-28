@@ -139,7 +139,7 @@ module.exports = {
   // setupFiles: [],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts", "jest-preview/setup"],
+  setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
@@ -177,7 +177,12 @@ module.exports = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
-  // transform: undefined,
+  transform: {
+    "^.+\\.(ts|tsx)$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+    "^.+\\.(css|scss|sass|less)$": "jest-preview/transforms/css",
+    "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)":
+      "jest-preview/transforms/file",
+  },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
@@ -196,7 +201,7 @@ module.exports = {
 
   // Whether to use watchman for file crawling
   // watchman: true,
-  moduleNameMapper: {
-    ".(css|less|scss)$": "identity-obj-proxy",
-  },
+  // moduleNameMapper: {
+  // ".(css|less|scss)$": "identity-obj-proxy",
+  // },
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+// import { debug } from "jest-preview";
 import HighlightText from "../HighlightText";
 
 // Mock window.getSelection
@@ -76,9 +77,11 @@ describe("HighlightText", () => {
 
   test("shows popover on text selection", async () => {
     render(
-      <HighlightText colors={["red", "green", "blue"]}>
-        Hello world!
-      </HighlightText>
+      <div style={{ margin: 200 }}>
+        <HighlightText colors={["red", "green", "blue"]}>
+          Hello world!
+        </HighlightText>
+      </div>
     );
 
     const textElement = screen.getByText("Hello world!");
@@ -92,7 +95,7 @@ describe("HighlightText", () => {
 
     // Simulate mouseup event
     fireEvent.mouseUp(textElement);
-
+    // debug();
     // Check if popover appears
     await waitFor(() => {
       expect(screen.getByRole("presentation")).toBeTruthy();
@@ -292,12 +295,14 @@ describe("HighlightText", () => {
 
   test("handles specific multi-element case: h1 to p selection", async () => {
     render(
-      <HighlightText colors={["#ffff00"]}>
-        <div>
-          <h1>Tiêu đề này có thể highlight</h1>
-          <p>Lorem ipsum is simply</p>
-        </div>
-      </HighlightText>
+      <div style={{ margin: 200 }}>
+        <HighlightText colors={["#ffff00"]}>
+          <div>
+            <h1>Tiêu đề này có thể highlight</h1>
+            <p>Lorem ipsum is simply</p>
+          </div>
+        </HighlightText>
+      </div>
     );
 
     const titleElement = screen.getByText("Tiêu đề này có thể highlight");
@@ -329,7 +334,7 @@ describe("HighlightText", () => {
     // Click on color button
     const colorButtons = screen.getAllByRole("button");
     fireEvent.click(colorButtons[0]);
-
+    // debug();
     // Should handle multi-element selection gracefully
     // Verify that color button was clicked (popover should still be visible in test environment)
     expect(colorButtons[0]).toBeTruthy();
