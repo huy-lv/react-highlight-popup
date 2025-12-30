@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./HighlightText.scss";
 import { Meta, Offset } from "../../types/Meta";
-import { addToSelectedText } from "./utils";
+import { addToSelectedText, unwrapHighlightsInRange } from "./utils";
 
 export interface HighlightTextProps {
   children: string | React.ReactNode;
@@ -181,158 +181,151 @@ const HighlightText = ({
     setShowPopover(true);
   }
 
+  /**
+   * Hàm xử lý highlight cho HTML content
+   * @param selectedText - Text được user select
+   * @param color - Màu nền cần apply
+   *
+   * Logic:
+   * 1. Tìm vị trí start/end của selectedText trong full text content
+   * 2. Unwrap (remove) tất cả highlights cũ trong vùng [start, end)
+   * 3. Split text nodes và wrap phần được select bằng <span> có background-color
+   *
+   * Ví dụ: <p>12345678901234567890</p>
+   *   Select "2345" (index 1-5) màu đỏ   → <p><span>1</span><span style="background-color:red">2345</span><span>678901234567890</span></p>
+   *   Select "4567890123" (index 3-13) màu xanh → <p><span>1</span><span style="background-color:red">23</span><span style="background-color:blue">4567890123</span><span>456789...</span></p>
+   */
+  const handleHtmlHighlight = (selectedText: string, color?: string) => {
+    if (!highlight.current) return;
+
+    const popableElement = highlight.current.querySelector(".h-popable");
+    if (!popableElement) return;
+
+    const fullText = popableElement.textContent || "";
+    const startIndex = fullText.indexOf(selectedText);
+
+    if (startIndex === -1) return;
+
+    const endIndex = startIndex + selectedText.length;
+
+    // Bước 1: Unwrap (xóa) tất cả highlights cũ trong vùng [startIndex, endIndex)
+    // Điều này giúp tránh overlap: nếu select 4-13 sau khi đã select 2-5,
+    // phần 4-5 sẽ bị xóa highlight cũ rồi apply highlight mới
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      try {
+        const rangeToUnwrap = selection.getRangeAt(0).cloneRange();
+        unwrapHighlightsInRange(rangeToUnwrap, popableElement as HTMLElement);
+      } catch (e) {
+        // Ignore nếu không thể tạo range
+      }
+    }
+
+    // Bước 2: Tách text nodes dựa trên character offset và wrap phần được select
+    wrapTextRangeByCharIndex(
+      popableElement as HTMLElement,
+      startIndex,
+      endIndex,
+      color
+    );
+  };
+
+  /**
+   * Hàm tách text nodes dựa trên character index và wrap phần được select
+   * @param root - Root element chứa text
+   * @param startChar - Vị trí ký tự bắt đầu (0-based index)
+   * @param endChar - Vị trí ký tự kết thúc (exclusive)
+   * @param backgroundColor - Màu nền cần apply
+   *
+   * Cách hoạt động:
+   * 1. Duyệt tất cả text nodes trong root
+   * 2. Với mỗi text node, tính phạm vi ký tự của nó trong text chung
+   * 3. Nếu text node overlap với vùng [startChar, endChar), tách và wrap
+   */
+  const wrapTextRangeByCharIndex = (
+    root: HTMLElement,
+    startChar: number,
+    endChar: number,
+    backgroundColor?: string
+  ) => {
+    // Thu thập tất cả text nodes với vị trí ký tự của chúng
+    const textNodes: { node: Text; charStart: number; charEnd: number }[] = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+
+    let currentCharIndex = 0;
+    let node: Node | null = walker.nextNode();
+    while (node) {
+      const textNode = node as Text;
+      const text = textNode.textContent || "";
+      const textLength = text.length;
+
+      if (textLength > 0) {
+        textNodes.push({
+          node: textNode,
+          charStart: currentCharIndex,
+          charEnd: currentCharIndex + textLength,
+        });
+        currentCharIndex += textLength;
+      }
+      node = walker.nextNode();
+    }
+
+    // Xử lý tách và wrap cho mỗi text node
+    for (const entry of textNodes) {
+      const { node: textNode, charStart, charEnd } = entry;
+
+      // Tính vùng overlap giữa [startChar, endChar) và [charStart, charEnd)
+      const overlapStart = Math.max(charStart, startChar);
+      const overlapEnd = Math.min(charEnd, endChar);
+
+      // Nếu không có overlap, bỏ qua
+      if (overlapStart >= overlapEnd) continue;
+
+      // Chuyển đổi char index thành offset trong text node
+      const nodeStartOffset = overlapStart - charStart;
+      const nodeEndOffset = overlapEnd - charStart;
+      const textLength = (textNode.textContent || "").length;
+
+      // Tách text node nếu cần
+      let selectedNode: Text | null = null;
+
+      // Nếu end không phải là cuối text node, tách để tạo phần sau
+      if (nodeEndOffset < textLength) {
+        textNode.splitText(nodeEndOffset);
+      }
+
+      // Nếu start không phải là đầu text node, tách để tạo phần được select
+      if (nodeStartOffset > 0) {
+        selectedNode = textNode.splitText(nodeStartOffset);
+      } else {
+        selectedNode = textNode;
+      }
+
+      // Tạo span wrapper và apply background color
+      if (selectedNode && selectedNode.textContent) {
+        const span = document.createElement("span");
+        span.style.backgroundColor = backgroundColor || "transparent";
+        span.className = "highlighted-text";
+        selectedNode.parentNode?.insertBefore(span, selectedNode);
+        span.appendChild(selectedNode);
+      }
+    }
+  };
+
   const onClickColor = (color?: string) => () => {
     if (!selectionRangeRef.current) return;
 
     if (isHtmlContent) {
-      // Với HTML content, tạo highlight trực tiếp trên DOM
       const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+      if (!selection) return;
 
-      const range = selection.getRangeAt(0);
-      const span = document.createElement("span");
-      span.style.backgroundColor = color || "transparent";
-      span.className = "highlighted-text";
+      const selectedText = selection.toString().trim();
+      if (!selectedText) return;
 
-      try {
-        // Thử surround contents trước
-        range.surroundContents(span);
-      } catch (e) {
-        // Nếu không thể surround (selection qua nhiều elements),
-        // sử dụng extractContents và insertNode
-        try {
-          // Chỉ thử extractContents nếu selection trong cùng một element
-          if (range.startContainer === range.endContainer) {
-            const contents = range.extractContents();
-            span.appendChild(contents);
-            range.insertNode(span);
-          } else {
-            throw new Error("Selection across multiple elements");
-          }
-        } catch (extractError) {
-          // Nếu không thể surround hoặc extract, tách selection thành nhiều phần riêng biệt
-          const startContainer = range.startContainer;
-          const endContainer = range.endContainer;
-          const startOffset = range.startOffset;
-          const endOffset = range.endOffset;
-
-          // Tạo highlight cho phần đầu (start container)
-          if (startContainer.nodeType === Node.TEXT_NODE) {
-            const startText = startContainer as Text;
-            const textLength = startText.length;
-            const actualEndOffset =
-              startContainer === endContainer ? endOffset : textLength;
-
-            if (
-              startOffset < actualEndOffset &&
-              actualEndOffset > startOffset
-            ) {
-              // Tách text node: trước selection
-              const beforeText = startText.splitText(startOffset);
-              // Tách text node: phần được chọn
-              const selectedText = beforeText.splitText(
-                actualEndOffset - startOffset
-              );
-
-              // Chỉ tạo wrapper nếu có text được chọn
-              if (selectedText.textContent && selectedText.textContent.trim()) {
-                const wrapper = document.createElement("span");
-                wrapper.style.backgroundColor = color || "transparent";
-                wrapper.className = "highlighted-text";
-                wrapper.appendChild(selectedText);
-
-                startText.parentNode?.insertBefore(wrapper, beforeText);
-              }
-            }
-          }
-
-          // Tạo highlight cho phần cuối (end container) nếu khác start container
-          if (
-            startContainer !== endContainer &&
-            endContainer.nodeType === Node.TEXT_NODE
-          ) {
-            const endText = endContainer as Text;
-
-            if (endOffset > 0) {
-              // Tách text node: phần được chọn từ đầu đến endOffset
-              const selectedText = endText.splitText(endOffset);
-
-              // Chỉ tạo wrapper nếu có text được chọn
-              if (selectedText.textContent && selectedText.textContent.trim()) {
-                const wrapper = document.createElement("span");
-                wrapper.style.backgroundColor = color || "transparent";
-                wrapper.className = "highlighted-text";
-                wrapper.appendChild(selectedText);
-
-                // Insert wrapper vào DOM
-                endText.parentNode?.insertBefore(
-                  wrapper,
-                  selectedText.nextSibling
-                );
-              }
-            }
-          }
-
-          // Tạo highlight cho các text nodes ở giữa (nếu có)
-          if (startContainer !== endContainer) {
-            // Tìm tất cả text nodes nằm giữa start và end container
-            const commonAncestor = range.commonAncestorContainer;
-            const walker = document.createTreeWalker(
-              commonAncestor,
-              NodeFilter.SHOW_TEXT,
-              null
-            );
-
-            const textNodes: Text[] = [];
-            let node;
-            while ((node = walker.nextNode())) {
-              // Chỉ lấy text nodes nằm giữa start và end container
-              if (node !== startContainer && node !== endContainer) {
-                // Kiểm tra xem node có nằm trong range không
-                try {
-                  // Tạo range cho node hiện tại
-                  const nodeRange = document.createRange();
-                  nodeRange.selectNode(node);
-
-                  // Kiểm tra xem node có nằm trong selection range không
-                  if (
-                    range.compareBoundaryPoints(
-                      Range.START_TO_START,
-                      nodeRange
-                    ) <= 0 &&
-                    range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >=
-                      0
-                  ) {
-                    textNodes.push(node as Text);
-                  }
-                } catch (e) {
-                  // Nếu không thể tạo range, bỏ qua
-                }
-              }
-            }
-
-            // Wrap các text nodes ở giữa
-            textNodes.forEach((textNode) => {
-              const parent = textNode.parentNode;
-              if (
-                parent &&
-                parent.nodeType === Node.ELEMENT_NODE &&
-                !(parent as Element).classList.contains("highlighted-text")
-              ) {
-                const wrapper = document.createElement("span");
-                wrapper.style.backgroundColor = color || "transparent";
-                wrapper.className = "highlighted-text";
-                parent.insertBefore(wrapper, textNode);
-                wrapper.appendChild(textNode);
-              }
-            });
-          }
-        }
-      }
-
-      selection.removeAllRanges();
+      // Gọi hàm xử lý HTML highlight
+      handleHtmlHighlight(selectedText, color);
     } else {
-      // Logic cũ cho string content
+      // Logic cho string content
       const newItem = {
         color,
         offset: selectionRangeRef.current,
