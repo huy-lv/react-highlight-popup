@@ -86,12 +86,12 @@ const testHighlightSequence = (
   // Normalize and compare HTML
   const actualHtml = rootElement.innerHTML
     .replace(/<!--.*?-->/g, "") // Remove comments
-    .replace(/\s+/g, " ") // Normalize whitespace
+    .replace(/\s+/g, "") // Normalize whitespace
     .trim();
 
   const expectedNormalized = expectedHtml
     .replace(/<!--.*?-->/g, "")
-    .replace(/\s+/g, " ")
+    .replace(/\s+/g, "")
     .trim();
 
   expect(actualHtml).toBe(expectedNormalized);
@@ -102,7 +102,13 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
     testHighlightSequence(
       "12345678901234567890",
       [{ start: 1, end: 5, color: "red" }],
-      '<span class="h-popable">1<span style="background-color: red;" class="highlighted-text">2345</span>678901234567890</span>'
+      `<span class="h-popable">
+        1
+        <span style="background-color: red;" class="highlighted-text">
+          2345
+        </span>
+        678901234567890
+      </span>`
     );
   });
 
@@ -113,7 +119,16 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
         { start: 1, end: 4, color: "red" },
         { start: 4, end: 7, color: "blue" },
       ],
-      '<span class="h-popable">0<span style="background-color: red;" class="highlighted-text">123</span><span style="background-color: blue;" class="highlighted-text">456</span>789</span>'
+      `<span class="h-popable">
+				0
+				<span style="background-color: red;" class="highlighted-text">
+					123
+				</span>
+				<span style="background-color: blue;" class="highlighted-text">
+					456
+				</span>
+				789
+			</span>`
     );
   });
 
@@ -121,7 +136,11 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
     testHighlightSequence(
       "Hello",
       [{ start: 0, end: 5, color: "red" }],
-      '<span class="h-popable"><span style="background-color: red;" class="highlighted-text">Hello</span></span>'
+      `<span class="h-popable">
+				<span style="background-color: red;" class="highlighted-text">
+					Hello
+				</span>
+			</span>`
     );
   });
 
@@ -133,7 +152,20 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
         { start: 3, end: 5, color: "blue" },
         { start: 6, end: 8, color: "green" },
       ],
-      '<span class="h-popable"><span style="background-color: red;" class="highlighted-text">ab</span>c<span style="background-color: blue;" class="highlighted-text">de</span>f<span style="background-color: green;" class="highlighted-text">gh</span>ij</span>'
+      `<span class="h-popable">
+				<span style="background-color: red;" class="highlighted-text">
+					ab
+				</span>
+				c
+				<span style="background-color: blue;" class="highlighted-text">
+					de
+				</span>
+				f
+				<span style="background-color: green;" class="highlighted-text">
+					gh
+				</span>
+				ij
+			</span>`
     );
   });
 
@@ -141,7 +173,14 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
     testHighlightSequence(
       "<p>Hello World</p>",
       [{ start: 0, end: 5, color: "red" }],
-      '<span class="h-popable"><p><span style="background-color: red;" class="highlighted-text">Hello</span> World</p></span>'
+      `<span class="h-popable">
+				<p>
+					<span style="background-color: red;" class="highlighted-text">
+						Hello
+					</span>
+				 World
+				</p>
+			</span>`
     );
   });
 
@@ -149,7 +188,60 @@ describe("HighlightText - HTML Content Direct DOM Tests", () => {
     testHighlightSequence(
       "<span>ab</span>cd",
       [{ start: 1, end: 4, color: "blue" }],
-      '<span class="h-popable"><span>a<span style="background-color: blue;" class="highlighted-text">b</span></span>cd</span>'
+      `<span class="h-popable">
+				<span>
+					a
+					<span style="background-color: blue;" class="highlighted-text">
+					b
+					</span>
+				</span>
+				cd
+			</span>`
+    );
+  });
+
+  test("Highlights single element", () => {
+    testHighlightSequence(
+      "<h1>0123456789001234567890</h1>",
+      [
+        { start: 1, end: 4, color: "blue" },
+        { start: 6, end: 9, color: "red" },
+      ],
+      `<span class="h-popable">
+				<h1>
+					0
+					<span style="background-color: blue;" class="highlighted-text">
+						123
+					</span>
+					45
+					<span style="background-color: red;" class="highlighted-text">
+						678
+					</span>
+					9001234567890
+				</h1>
+			</span>`
+    );
+  });
+
+  test("Highlights single element (2)", () => {
+    testHighlightSequence(
+      "<h1>12345678901234567890</h1>",
+      [
+        { start: 1, end: 6, color: "blue" },
+        { start: 4, end: 9, color: "red" },
+      ],
+      `<span class="h-popable">
+				<h1>
+					1
+					<span style="background-color: blue;" class="highlighted-text">
+						234
+					</span>
+					<span style="background-color: red;" class="highlighted-text">
+						56789
+					</span>
+					01234567890
+				</h1>
+			</span>`
     );
   });
 });
